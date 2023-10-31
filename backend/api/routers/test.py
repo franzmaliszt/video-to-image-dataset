@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.worker import worker
+from ..workers.worker import worker
 
 
 test_router = APIRouter(prefix="/test")
