@@ -10,8 +10,7 @@ load_dotenv()
 logger = get_task_logger(__name__)
 
 app = Celery(__name__)
-app.conf.broker_url = os.environ["CELERY_BROKER_URL"]
-app.conf.result_backend = os.environ["CELERY_RESULT_BACKEND"]
+app.config_from_object("config")
 
 @app.task(name="hello_task")
 def hello(text: str) -> str:
