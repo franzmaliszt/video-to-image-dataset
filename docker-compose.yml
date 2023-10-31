@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: gradio-ui
+    command: python3 main.py
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      - BACKEND_PORT
+      - FRONTEND_PORT
+  
+  db:
+    image: mongo:6-jammy
+    container_name: mongo-result-backend
+    command: mongod --quiet --logpath /dev/null
+    ports:
+      - "27017:27017"
+  
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER
+      - RABBITMQ_DEFAULT_PASS
+
+  worker:
+    build: ./worker
+    container_name: worker
+    command: celery -A celeryworker worker -l warning -Q test-queue
+    environment:
+      - CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND
+    depends_on:
+      - rabbitmq
+      - db
+
+  backend:
+    build: ./backend
+    container_name: fastapi-backend
+    image: backend
+    command: uvicorn app:app --host 0.0.0.0 --port ${BACKEND_PORT}
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      - CELERY_BROKER_URL
+      - CELERY_RESULT_BACKEND
+    depends_on:
+      - worker
+
+  # flower:
+  #   image: mher/flower:2.0
+  #   environment:
+  #     - CELERY_BROKER_URL
+  #     # - FLOWER_PORT
+  #   ports:
+  #     - 5555:5555
+  #   depends_on:
+  #     - rabbitmq
