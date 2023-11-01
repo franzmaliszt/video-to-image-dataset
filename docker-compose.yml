@@ -22,6 +22,8 @@ services:
     build: ./frontend
     container_name: gradio-ui
     command: python3 main.py
+    volumes:
+      - ./frontend:/app
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
@@ -39,6 +41,8 @@ services:
     build: ./worker
     container_name: worker
     command: celery -A celeryworker.app worker -l warning
+    volumes:
+      - ./worker:/app
     environment:
       - CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND
@@ -69,5 +73,5 @@ services:
     ports:
       - "${FLOWER_PORT}:${FLOWER_PORT}"
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - worker
+      - db
