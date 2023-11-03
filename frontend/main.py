@@ -117,7 +117,9 @@ with gr.Blocks(title="Towards Gesund") as demo:
             with gr.Row():
                 with gr.Column():
                     gr.HTML("""<h3>1. Select a video</h3>""")
-                    video_dropdown = gr.Dropdown(show_label=False, min_width=480, interactive=True)
+                    video_dropdown = gr.Dropdown(
+                        show_label=False, min_width=480, interactive=True
+                    )
                     gr.HTML("""<h3>2. Select images to annotate</h3>""")
                     image_dropdown = gr.Dropdown(show_label=False, min_width=480)
                     gr.HTML("""<h3>3. Options</h3>""")
@@ -141,12 +143,26 @@ with gr.Blocks(title="Towards Gesund") as demo:
                 with gr.Column(scale=3):
                     # TODO: make canvas interactive=False, see issue: #5945
                     sketch_pad = gr.Image(tool="sketch")
-                    with gr.Row(variant="panel"):
+                    with gr.Row():
                         annotate_btn = gr.Button(
                             value="Confirm Annotation", variant="primary", scale=0
                         )
                         undo_btn = gr.Button(value="Undo", scale=0, min_width=80)
+                    upload_btn = gr.UploadButton(
+                        "Upload Files",
+                        scale=0,
+                        file_count="multiple",
+                        file_types=["jpg", "jpeg", "png", "mp4"],
+                    )
         with gr.Column(scale=1):
+            with gr.Accordion("Files", open=False):
+                uploaded = gr.State(dict())
+                file_system = gr.File(
+                    file_count="multiple",
+                    file_types=["image", "mp4"],
+                    label="File system",
+                    interactive=False,
+                )
             with gr.Tab("Experiments"):
                 input_video = gr.Video(format="mp4", label="Video", interactive=False)
                 input_gallery = gr.Gallery(
@@ -156,7 +172,11 @@ with gr.Blocks(title="Towards Gesund") as demo:
                     object_fit="contain",
                     show_download_button=False,
                 )
-                run_btn = gr.Button(value="Run", variant="primary", scale=0, min_width=160)
+                with gr.Row(variant="panel"):
+                    experiment_name = gr.Textbox(max_lines=1, placeholder="Experiment name", show_label=False, container=False)
+                    run_btn = gr.Button(
+                        value="Run", variant="primary", scale=0, min_width=160
+                    )
             with gr.Tab("Result"):
                 dataset = gr.Gallery(label="Result dataset")
                 with gr.Group():
@@ -171,20 +191,6 @@ with gr.Blocks(title="Towards Gesund") as demo:
                         download_btn = gr.Button(
                             value="↓", variant="secondary", min_width=50
                         )
-            with gr.Accordion("Files"):
-                uploaded = gr.State(dict())
-                upload_btn = gr.UploadButton(
-                    "Upload",
-                    scale=0,
-                    file_count="multiple",
-                    file_types=["jpg", "jpeg", "png", "mp4"],
-                )
-                file_system = gr.File(
-                    file_count="multiple",
-                    file_types=["image", "mp4"],
-                    label="File system",
-                    interactive=False,
-                )
 
     demo.load(initialize, outputs=[])
     upload_btn.upload(on_upload, inputs=[uploaded]).success(
