@@ -41,11 +41,13 @@ services:
     build: ./worker
     container_name: worker
     command: celery -A celeryworker.app worker -l warning
-    volumes:
-      - ./worker:/app
+    # volumes:
+    #   - ./worker:/app
+    #   - /app/models
     environment:
       - CELERY_BROKER_URL
       - CELERY_RESULT_BACKEND
+      - CLIP_MODEL
     depends_on:
       rabbitmq:
         condition: service_healthy
