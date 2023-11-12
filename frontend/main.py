@@ -89,20 +89,22 @@ async def submit(
         response = await client.post(
             f"http://backend:{BACKEND_PORT}/test/submit",
             json={
-                "video": video_encodings,
+                "video": video_encodings[:16], #TODO: Enable batching
                 "images": sample_encodings,
             },
             params={"output_size": output_size},
         )
+
     task_id = response.json().get("task_id")
+    gr.Info(f"Submitted {experiment_name}")
     task_ids.update({experiment_name: task_id})
 
 
 async def await_result(name: str, video_path: str, task_ids: dict[str, str]):
     task_id = task_ids[name]
     url = f"http://backend:{BACKEND_PORT}/tasks/{task_id}"
-    for _ in range(5):
-        await sleep(5)
+    for _ in range(15):
+        await sleep(10)
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
         result = response.json()
@@ -147,8 +149,8 @@ with gr.Blocks(title="Towards Gesund") as demo:
                         dilution_rate = gr.Number(
                             minimum=0.1,
                             maximum=1,
-                            value=0.2,
-                            step=0.1,
+                            value=0.1,
+                            step=0.1,   
                             label="Frame dilution",
                             interactive=True,
                         )
