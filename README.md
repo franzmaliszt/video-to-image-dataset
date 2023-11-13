@@ -1,6 +1,8 @@
 # video-to-image-dataset
 
-Content based image retrieval from videos
+Weakly supervised image retrieval from videos
+
+![architectural diagram](static/weakly-supervised-image-retrieval-from-videos.png)
 
 ## Installation
 - Rename .env.example to .env
